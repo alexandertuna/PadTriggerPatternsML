@@ -7,7 +7,7 @@ def main():
 
     with open(filename_o, "w") as fi:
         all_pads = PadPolygons(filename_i)
-        for pad in all_pads.pads:
+        for pad in all_pads:
             if pad.wheel == 0 and pad.sector == 4:
                 fi.write(pad.line)
 

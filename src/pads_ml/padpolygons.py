@@ -17,6 +17,9 @@ class PadPolygons:
                 PadPolygon(*PadLine(line).data) for line in fi if is_valid(line)
             )
 
+    def __iter__(self):
+        return iter(self.pads)
+
 
 @dataclass()
 class PadPolygon:

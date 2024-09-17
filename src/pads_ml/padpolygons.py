@@ -23,6 +23,7 @@ class PadPolygon:
     """
     PadPolygon is a dataclass for holding attributes which describe a pad.
     """
+    line: str
     id: int
     wheel: int
     sector: int
@@ -78,6 +79,7 @@ class PadLine:
          x2, y2, z2, x3, y3, z3) = self.line.split()
 
         return (
+            self.line,
             int(id, base=16),
             0 if whl=="A" else 1,
             int(sec),

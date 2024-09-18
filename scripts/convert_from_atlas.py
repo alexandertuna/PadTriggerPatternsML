@@ -1,4 +1,4 @@
-from pads_ml.padpolygons import Pads
+from pads_ml.pads import Pads
 
 def main():
 

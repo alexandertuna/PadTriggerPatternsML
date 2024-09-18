@@ -11,20 +11,23 @@ class Pads:
                  create_polygons: bool = True,
                  ) -> None:
 
+        # read file
         self.filename = filename
         self.df = pd.read_csv(self.filename, sep="\s+")
 
+        # convert hex to int
         hexify = lambda x: int(x, 16)
         self.df["wheel"] = self.df["wheel_hex"].apply(hexify)
         self.df["id"] = self.df["id_hex"].apply(hexify)
 
+        # if requested: polygons
         if create_polygons:
             def create_polygon(row):
                 points = [
                     (row["x0"], row["y0"]),
                     (row["x1"], row["y1"]),
-                    (row["x2"], row["y2"]),
                     (row["x3"], row["y3"]),
+                    (row["x2"], row["y2"]),
                 ]
                 return Polygon(points)
 

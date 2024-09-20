@@ -39,3 +39,16 @@ class Pads:
 
             self.df["geometry"] = self.df.apply(create_polygon, axis=1)
             self.gdf = gpd.GeoDataFrame(self.df, geometry="geometry")
+
+        # split by layer
+        self.layer = {}
+        for layer in range(constants.LAYERS):
+            self.layer[layer] = self.df[self.df["layer"] == layer]
+
+        # split by quad and layer
+        self.quadlayer = {}
+        for quad in range(constants.QUADS):
+            self.quadlayer[quad] = {}
+            for layer in range(constants.LAYERS):
+                self.quadlayer[quad][layer] = self.df[(self.df["quad"] == quad) & (self.df["layer"] == layer)]
+

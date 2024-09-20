@@ -6,4 +6,4 @@ class Generator:
     def __init__(self, num: int):
         self.lines = Lines(num)
         self.pads = Pads("data/STGCPadTrigger.np.A05.txt")
-        self.traverser = Traverser(self.lines.df, self.pads.df)
+        self.traverser = Traverser(self.lines.df, self.pads)

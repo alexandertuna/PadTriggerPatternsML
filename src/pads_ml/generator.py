@@ -3,7 +3,7 @@ from .pads import Pads
 from .lines import Lines
 from .traverser import Traverser
 
-class Generator:
+class SignalGenerator:
     def __init__(self, num: int, pads_filename: str):
         lines = Lines(num)
         pads = Pads(pads_filename)

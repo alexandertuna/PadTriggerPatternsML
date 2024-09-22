@@ -38,6 +38,7 @@ class Pads:
                 return Polygon(points)
 
             self.df["geometry"] = self.df.apply(create_polygon, axis=1)
+            self.df["centroid"] = self.df["geometry"].apply(lambda x: x.centroid)
             self.gdf = gpd.GeoDataFrame(self.df, geometry="geometry")
 
         # split by layer

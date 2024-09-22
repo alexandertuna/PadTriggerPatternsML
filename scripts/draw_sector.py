@@ -9,18 +9,26 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
+import logging
+logging.basicConfig(level=logging.INFO)
+
 
 def main() -> None:
 
-    name = "data/STGCPadTrigger.np.A05.txt"
-    pads = Pads(name)
+    name_i = "data/STGCPadTrigger.np.A05.txt"
+    name_o = "detector.pdf"
 
-    with PdfPages("detector.pdf") as pdf:
+    logging.info(f"Opening pads file: {name_i}")
+    pads = Pads(name_i)
+
+    logging.info(f"Drawing pads to: {name_o}")
+    with PdfPages(name_o) as pdf:
         for layer in range(constants.LAYERS):
-            draw(pads.layer[layer], pdf)
+            logging.info(f"Drawing layer: {layer}")
+            draw_layer(pads.layer[layer], pdf)
 
 
-def draw(pads: pd.DataFrame, pdf: PdfPages) -> None:
+def draw_layer(pads: pd.DataFrame, pdf: PdfPages) -> None:
     # draw pads (rows)
     fig, ax = plt.subplots(figsize=(4, 4))
     for _, row in pads.iterrows():
@@ -29,17 +37,22 @@ def draw(pads: pd.DataFrame, pdf: PdfPages) -> None:
         ax.plot(x, y, color="black", linewidth=0.5)
 
     # make pretty
-    min_x, min_y = constants.SECTOR_XMIN, constants.SECTOR_YMIN
-    max_x, max_y = constants.SECTOR_XMAX, constants.SECTOR_YMAX
-    buffer_x = 0.05 * (max_x - min_x)
-    buffer_y = 0.05 * (max_y - min_y)
-    ax.set_xlim(min_x - buffer_x, max_x + buffer_x)
-    ax.set_ylim(min_y - buffer_y, max_y + buffer_y)
+    ax.set_xlim(*get_lim("x"))
+    ax.set_ylim(*get_lim("y"))
     ax.set_xlabel("x [mm]")
     ax.set_ylabel("y [mm]")
     plt.subplots_adjust(left=0.18, right=0.95, top=0.95, bottom=0.12)
     pdf.savefig(fig)
     plt.close()
+
+
+def get_lim(axis: str, buffer: float=0.05):
+    if axis not in ["x", "y"]:
+        raise ValueError(f"Invalid axis: {axis}")
+    min, max = (constants.SECTOR_XMIN, constants.SECTOR_XMAX) if axis == "x" else \
+               (constants.SECTOR_YMIN, constants.SECTOR_YMAX)
+    buffer = buffer * (max - min)
+    return min - buffer, max + buffer
 
 if __name__ == "__main__":
     main()

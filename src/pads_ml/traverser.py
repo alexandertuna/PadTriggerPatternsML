@@ -19,5 +19,5 @@ class Traverser:
             lines_gdf = gpd.GeoDataFrame(lines.df, geometry=f"point_{layer}")
             pads_gdf = gpd.GeoDataFrame(pads.layer[layer], geometry="geometry")
             joined = lines_gdf.sjoin(pads_gdf, how="left", predicate="within")
-            self.df[f"intersecting_pad_{layer}"] = joined["index_right"].fillna(-1).astype(int)
+            self.df[f"pad_{layer}"] = joined["index_right"].fillna(-1).astype(int)
 

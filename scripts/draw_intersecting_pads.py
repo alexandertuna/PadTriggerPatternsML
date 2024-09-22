@@ -41,7 +41,7 @@ def main():
             row = gen.iloc[line]
             pad_polygons = []
             for layer in range(constants.LAYERS):
-                i_pad = row[f"intersecting_pad_{layer}"].astype(int)
+                i_pad = row[f"pad_{layer}"].astype(int)
                 if i_pad == -1:
                     pad_polygons.append(None)
                 else:

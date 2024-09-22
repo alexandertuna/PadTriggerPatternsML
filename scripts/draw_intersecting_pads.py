@@ -31,7 +31,8 @@ MIN = 1
 
 def main():
     num_lines = 3
-    gen_name = "tmp.parquet"
+    gen_name = "signal.parquet"
+    # gen_name = "noise.parquet"
     pads_name = "data/STGCPadTrigger.np.A05.txt"
     gen = pd.read_parquet(gen_name)
     pads = Pads(pads_name)

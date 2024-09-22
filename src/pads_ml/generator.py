@@ -1,3 +1,6 @@
+import numpy as np
+import pandas as pd
+
 from . import constants
 from .pads import Pads
 from .lines import Lines
@@ -26,3 +29,16 @@ class SignalGenerator:
             left_index=True,
             right_index=True,
         )
+
+class NoiseGenerator:
+    """
+    Generate noise events.
+    In each layer, a noise pad is randomly selected from the pads in that layer
+    """
+    def __init__(self, num: int, pads_filename: str):
+        pads = Pads(pads_filename)
+        self.df = pd.DataFrame({
+            f"pad_{layer}": np.random.randint(0, len(pads.layer[layer]), num)
+            for layer in range(constants.LAYERS)
+        })
+

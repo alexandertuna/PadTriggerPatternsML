@@ -6,10 +6,7 @@ draw the intersecting pads.
 from pads_ml.pads import Pads
 from pads_ml import constants
 
-import time
-import numpy as np
 import pandas as pd
-import geopandas as gpd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages

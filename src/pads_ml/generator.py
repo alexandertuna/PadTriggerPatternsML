@@ -13,7 +13,11 @@ class Generator:
             raise ValueError(f"Lines and Traverser have different lengths: {len(lines.df)} != {len(traverser.df)}")
 
         # drop the per-layer columns from lines
-        columns = [f"{coord}_{layer}" for coord in ["x", "y", "quad", "point"] for layer in range(constants.LAYERS)]
+        columns = [
+            f"{coord}_{layer}"
+            for coord in ["x", "y", "quad", "point"]
+            for layer in range(constants.LAYERS)
+        ]
         lines.df = lines.df.drop(columns=columns)
 
         self.df = lines.df.merge(

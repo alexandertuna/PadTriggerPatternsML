@@ -15,6 +15,8 @@ class OneHotFullyConnected(nn.Module):
         self.fc_0 = nn.Linear(constants.PADS, 256)
         self.fc_1 = nn.Linear(256, 128)
         self.fc_2 = nn.Linear(128, 1)
+        # print the number of parameters
+        print(f"Model parameters: {sum(p.numel() for p in self.parameters())}")
 
     def forward(self, x):
         x = F.relu(self.fc_0(x))

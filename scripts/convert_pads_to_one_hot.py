@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from typing import Tuple
 from pathlib import Path
 
 import logging
@@ -10,8 +9,8 @@ from pads_ml import constants
 
 def main():
 
-    fname = Path("signal.2024_09_22_17_43_09.100000.parquet")
-    # fname = Path("signal.2024_09_22_17_44_41.1000000.parquet")
+    # fname = Path("signal.2024_09_22_17_43_09.100000.parquet")
+    fname = Path("noise.2024_09_22_17_43_09.100000.parquet")
 
     logging.info(f"Opening {fname} ...")
     df = pd.read_parquet(fname)
@@ -26,7 +25,7 @@ def main():
     np.save(outname, one_hot)
 
 
-def convert_to_one_hot(df: pd.DataFrame) -> Tuple[np.array, np.array]:
+def convert_to_one_hot(df: pd.DataFrame) -> np.array:
 
     # Get the pad columns as np.array, and mask nan
     pad_columns = df[ [f"pad_{i}" for i in range(constants.LAYERS)] ].values
@@ -45,9 +44,6 @@ def convert_to_one_hot(df: pd.DataFrame) -> Tuple[np.array, np.array]:
     logging.info(f"Doing the heavy lifting ...")
     one_hot_array = np.zeros((len(df), constants.PADS), dtype=int)
     one_hot_array[valid_row_indices, valid_pad_columns] = 1
-
-    # Check that the sum of each row is 8
-    print(np.sum(one_hot_array, axis=1))
 
     #for row in range(len(df)):
     #    for col in range(constants.LAYERS):

@@ -5,7 +5,7 @@ Generate lines with origin at (0, 0) and randomly distributed with
 
 import numpy as np
 import pandas as pd
-np.random.seed(42)
+# np.random.seed(42)
 from shapely.geometry import Point
 
 from . import constants

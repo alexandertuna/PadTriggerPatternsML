@@ -3,7 +3,7 @@ from pads_ml.generator import SignalGenerator, NoiseGenerator
 
 def main():
     now = time.strftime("%Y_%m_%d_%H_%M_%S")
-    num = 10000
+    num = 1_000_000
 
     print("Generating signal ...")
     signal = SignalGenerator(num, "data/STGCPadTrigger.np.A05.txt")

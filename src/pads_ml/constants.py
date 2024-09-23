@@ -9,6 +9,8 @@ PADS = 1739
 LAYERS = 8
 QUADS = 3
 
+PADS_REQUIRED = 8
+
 ZS = [
     7454.0,
     7465.0,

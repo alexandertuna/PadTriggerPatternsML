@@ -9,20 +9,22 @@ from pads_ml import constants
 
 def main():
 
-    # fname = Path("signal.2024_09_22_17_43_09.100000.parquet")
-    fname = Path("noise.2024_09_22_17_43_09.100000.parquet")
+    for fname in [
+        Path("signal.2024_09_23_08_12_35.100000.parquet"),
+        Path("noise.2024_09_23_08_12_35.100000.parquet"),
+    ]:
 
-    logging.info(f"Opening {fname} ...")
-    df = pd.read_parquet(fname)
-    df[ df == -1 ] = np.nan
+        logging.info(f"Opening {fname} ...")
+        df = pd.read_parquet(fname)
+        df[ df == -1 ] = np.nan
 
-    logging.info(f"Converting to one-hot ...")
-    one_hot = convert_to_one_hot(df)
+        logging.info(f"Converting to one-hot ...")
+        one_hot = convert_to_one_hot(df)
 
-    # write to file
-    outname = fname.with_suffix(".one_hot.npy")
-    logging.info(f"Writing to: {outname}")
-    np.save(outname, one_hot)
+        # write to file
+        outname = fname.with_suffix(".one_hot.npy")
+        logging.info(f"Writing to: {outname}")
+        np.save(outname, one_hot)
 
 
 def convert_to_one_hot(df: pd.DataFrame) -> np.array:

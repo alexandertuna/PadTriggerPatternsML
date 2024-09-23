@@ -30,8 +30,8 @@ MAX = 0
 MIN = 1
 
 def main():
-    num_lines = 3
-    gen_name = "signal.parquet"
+    num_lines = 20
+    gen_name = "signal.2024_09_22_12_53_38.100000.parquet"
     # gen_name = "noise.parquet"
     pads_name = "data/STGCPadTrigger.np.A05.txt"
     gen = pd.read_parquet(gen_name)

@@ -5,7 +5,7 @@ from . import constants
 from typing import Tuple
 
 import logging
-logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class DataPreparer:
 
@@ -49,7 +49,7 @@ class DataPreparer:
         valid_pad_columns = pad_columns[valid_entries_mask].astype(int)
 
         # Set the one-hot values (intensive)
-        logging.info(f"Doing the heavy lifting ...")
+        logger.info(f"Doing the heavy lifting ...")
         one_hot_array = np.zeros((len(df), constants.PADS), dtype=int)
         one_hot_array[valid_row_indices, valid_pad_columns] = 1
 
@@ -70,7 +70,7 @@ class DataPreparer:
         features = features[indices]
         labels = labels[indices]
 
-        logging.info(f"Shape: {features.shape}")
+        logger.info(f"Shape: {features.shape}")
         return features, labels
 
 

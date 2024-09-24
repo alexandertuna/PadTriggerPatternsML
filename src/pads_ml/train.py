@@ -4,36 +4,37 @@ Train a OneHotFullyConnected model on pads data
 
 import torch
 from torch import nn
-from torch.utils.data import Dataset
+from torch.utils.data import IterableDataset
 from torch.utils.data import DataLoader
 from torch.optim import AdamW
-import pandas as pd
 import numpy as np
-from typing import Tuple
+from typing import List, Tuple
+from pathlib import Path
+import logging
+logger = logging.getLogger(__name__)
 
 from .model import OneHotFullyConnected
-from . import constants
 
 class OneHotFullyConnectedTrainer:
 
     def __init__(
         self,
-        features: np.array,
-        labels: np.array,
+        features_train_path: List[Path],
+        features_valid_path: List[Path],
+        labels_train_path: List[Path],
+        labels_valid_path: List[Path],
     ):
+        self.features_train_path = features_train_path
+        self.features_valid_path = features_valid_path
+        self.labels_train_path = labels_train_path
+        self.labels_valid_path = labels_valid_path
         self.batch_size = 128
-        # self.df = self.combine_inputs(signal, noise)
-        # self.data, self.labels = self.convert_to_one_hot(self.df)
-        self.features = features
-        self.labels = labels
-        self.loader = self.load_data()
-        self.n_epoch = 3
+        self.loader, self.valid_loader = self.load_data()
+        self.n_epoch = 2
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print(f"Device: {self.device}")
-        print(f"Features:", self.features.shape)
-        print(f"Labels:", self.labels.shape)
-        # self.dataloader = OneHotFullyConnectedDataLoader()
+        logger.info(f"Device: {self.device}")
         self.model = OneHotFullyConnected()
+
 
     def train(self):
         """
@@ -42,7 +43,7 @@ class OneHotFullyConnectedTrainer:
         self.model.train()
         optimizer = AdamW(self.model.parameters(), lr=0.001)
         criterion = nn.BCELoss()
-        print("Starting epoch loop ...")
+        logger.info("Starting epoch loop ...")
         for epoch in range(self.n_epoch):
             total_loss, n_loss = 0, 0
             for features, labels in self.loader:
@@ -55,37 +56,55 @@ class OneHotFullyConnectedTrainer:
                 total_loss += loss.item()
                 n_loss += 1
             avg_loss = total_loss / n_loss
-            print(f"Epoch {epoch}, loss: {avg_loss}")
+            logger.info(f"Epoch {epoch}, loss: {avg_loss}")
         self.model.eval()
 
-    def combine_inputs(
-            self,
-            signal: pd.DataFrame,
-            noise: pd.DataFrame,
-    ) -> pd.DataFrame:
-        """
-        Drop signal events with missing pads,
-        and truncate noise to the same length as signal
-        """
-        print(f"Combining inputs ...")
-        signal["label"] = 1
-        noise["label"] = 0
-        cols = [f"pad_{i}" for i in range(constants.LAYERS)] + ["label"]
-        signal = signal[ (signal[cols] != -1).all(axis=1) ]
-        noise = noise.iloc[ : len(signal) ]
-        return pd.concat([signal[cols], noise], ignore_index=True)
 
-    
-    def load_data(self) -> DataLoader:
+    def load_data(self) -> Tuple[DataLoader, DataLoader]:
         """
         Load data into a DataLoader
         """
-        print(f"Creating DataLoader ...")
-        features = torch.tensor(self.features, dtype=torch.float32)
-        labels = torch.tensor(self.labels, dtype=torch.float32)
-        dataset = torch.utils.data.TensorDataset(features, labels)
-        return DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
+        logger.info(f"Creating DataLoader ...")
+        trainset = OneHotDataset(self.features_train_path, self.labels_train_path, self.batch_size)
+        validset = OneHotDataset(self.features_valid_path, self.labels_valid_path, self.batch_size)
+        trainloader = DataLoader(trainset, batch_size=None)
+        validloader = DataLoader(validset, batch_size=None)
+        return trainloader, validloader
 
 
-class OneHotDataset(Dataset):
-    pass
+class OneHotDataset(IterableDataset):
+
+    def __init__(
+            self,
+            feature_paths: List[Path],
+            label_paths: List[Path],
+            batch_size: int,
+        ):
+        super().__init__()
+
+        self.feature_paths = sorted(feature_paths)
+        self.label_paths = sorted(label_paths)
+        self.batch_size = batch_size
+
+    def __iter__(self):
+
+        for fpath, lpath in zip(self.feature_paths, self.label_paths):
+
+            features = np.load(fpath)
+            labels = np.load(lpath)
+
+            num = features.shape[0]
+            indices = np.arange(num)
+            np.random.shuffle(indices)
+
+            for start in range(0, num, self.batch_size):
+
+                end = min(start + self.batch_size, num)
+
+                batch_feature = features[indices[start:end]]
+                batch_label = labels[indices[start:end]]
+                yield (
+                    torch.tensor(batch_feature, dtype=torch.float32),
+                    torch.tensor(batch_label, dtype=torch.float32),
+                )
+

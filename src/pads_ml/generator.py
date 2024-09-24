@@ -7,9 +7,8 @@ from .lines import Lines
 from .traverser import Traverser
 
 class SignalGenerator:
-    def __init__(self, num: int, pads_filename: str):
+    def __init__(self, num: int, pads: Pads):
         lines = Lines(num)
-        pads = Pads(pads_filename)
         traverser = Traverser(lines, pads)
 
         if len(lines.df) != len(traverser.df):
@@ -35,10 +34,9 @@ class NoiseGenerator:
     Generate noise events.
     In each layer, a noise pad is randomly selected from the pads in that layer
     """
-    def __init__(self, num: int, pads_filename: str):
-        pads = Pads(pads_filename)
+    def __init__(self, num: int, pads: Pads):
         self.df = pd.DataFrame({
-            f"pad_{layer}": np.random.randint(0, len(pads.layer[layer]), num)
+            f"pad_{layer}": np.random.choice(pads.layer[layer].index, size=num)
             for layer in range(constants.LAYERS)
         })
 

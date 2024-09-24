@@ -3,14 +3,16 @@ import time
 from pathlib import Path
 from pads_ml.generator import SignalGenerator, NoiseGenerator
 from pads_ml.preprocess import DataPreparer
+from pads_ml.pads import Pads
 
 import logging
 logging.basicConfig(level=logging.INFO)
 
 def main():
-    pads = Path("data/STGCPadTrigger.np.A05.txt")
+    pads_path = Path("data/STGCPadTrigger.np.A05.txt")
+    pads = Pads(pads_path)
     now = time.strftime("%Y_%m_%d_%H_%M_%S")
-    num = 10_000
+    num = 1_000
 
     logging.info("Generating signal")
     signal = SignalGenerator(num, pads)

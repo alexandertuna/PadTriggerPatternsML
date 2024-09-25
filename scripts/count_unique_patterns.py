@@ -7,16 +7,17 @@ from pads_ml import constants
 def main():
 
     # tmp checking 
-    signal_path = Path("signal.2024_09_24_16_33_51.1000000.parquet")
+    # signal_path = Path("signal.2024_09_24_16_33_51.1000000.parquet")
+    signal_path = Path("signal.2024_09_24_21_50_57.1000000.parquet")
     cols = [f"pad_{i}" for i in range(constants.LAYERS)]
     df = pd.read_parquet(signal_path)
     df = df[cols]
     print(df)
     nodups = df.drop_duplicates()
-    print(nodups.shape)
+    print("nodups.shape", nodups.shape)
     #print(nodups)
     allvalid = nodups[ nodups.apply(lambda row: all(row != -1), axis=1) ]
-    print(allvalid.shape)
+    print("allvalid.shape", allvalid.shape)
     # print(allvalid)
 
     return

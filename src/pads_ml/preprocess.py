@@ -63,7 +63,7 @@ class DataPreparer:
         features = np.concatenate([signal, noise], axis=0)
 
         labels = np.zeros(shape=(len(features), 1))
-        labels[len(signal) : , :] = 1
+        labels[:len(signal), :] = 1
 
         indices = np.arange(len(features))
         np.random.shuffle(indices)

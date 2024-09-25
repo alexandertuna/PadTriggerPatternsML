@@ -12,7 +12,7 @@ def main():
     pads_path = Path("data/STGCPadTrigger.np.A05.txt")
     pads = Pads(pads_path)
     now = time.strftime("%Y_%m_%d_%H_%M_%S")
-    num = 1_000_000
+    num = 10_000
 
     logging.info("Generating signal")
     signal = SignalGenerator(num, pads)

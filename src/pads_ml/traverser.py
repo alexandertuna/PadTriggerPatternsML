@@ -5,6 +5,9 @@ from . import constants
 from .pads import Pads
 from .lines import Lines
 
+import logging
+logger = logging.getLogger(__name__)
+
 class Traverser:
 
     def __init__(
@@ -14,6 +17,7 @@ class Traverser:
     ):
 
         # For each layer, find which pad (if any) contains the line
+        logger.info("Finding pads in each layer for the lines")
         self.df = pd.DataFrame()
         for layer in range(constants.LAYERS):
             lines_gdf = gpd.GeoDataFrame(lines.df, geometry=f"point_{layer}")

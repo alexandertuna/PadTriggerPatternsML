@@ -4,6 +4,10 @@ from shapely.geometry import Polygon
 
 from . import constants
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 class Pads:
     """
     Pads holds a pandas dataframe of pad geometry
@@ -15,9 +19,11 @@ class Pads:
 
         # read file
         self.filename = filename
+        logger.info(f"Reading pads: {self.filename}")
         self.df = pd.read_csv(self.filename, sep="\s+")
 
         # convert hex to int
+        logger.info("Adding pad attributes")
         hexify = lambda x: int(x, 16)
         self.df["wheel"] = self.df["wheel_hex"].apply(hexify)
         self.df["id"] = self.df["id_hex"].apply(hexify)
@@ -37,19 +43,12 @@ class Pads:
                 ]
                 return Polygon(points)
 
+            logger.info("Creating pad polygons")
             self.df["geometry"] = self.df.apply(create_polygon, axis=1)
-            self.df["centroid"] = self.df["geometry"].apply(lambda x: x.centroid)
-            self.gdf = gpd.GeoDataFrame(self.df, geometry="geometry")
 
-        # split by layer
+        # pads split by layer
         self.layer = {}
         for layer in range(constants.LAYERS):
             self.layer[layer] = self.df[self.df["layer"] == layer]
 
-        # split by quad and layer
-        self.quadlayer = {}
-        for quad in range(constants.QUADS):
-            self.quadlayer[quad] = {}
-            for layer in range(constants.LAYERS):
-                self.quadlayer[quad][layer] = self.df[(self.df["quad"] == quad) & (self.df["layer"] == layer)]
 

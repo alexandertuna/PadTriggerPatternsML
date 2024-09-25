@@ -13,6 +13,9 @@ QUADS = 3
 
 PADS_REQUIRED = 8
 
+ATLAS_ETA_MU = 0.0
+ATLAS_ETA_SIGMA = 2.0
+
 ZS = [
     7454.0,
     7465.0,

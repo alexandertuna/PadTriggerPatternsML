@@ -25,11 +25,19 @@ class Lines:
 
         self.df = pd.DataFrame()
 
-        # Generate random eta and phi
-        self.df["eta"] = np.random.uniform(constants.ETA_MIN, constants.ETA_MAX, self.num)
+        # use ATLAS eta distribution
+        eta = np.random.normal(constants.ATLAS_ETA_MU, constants.ATLAS_ETA_SIGMA, 10 * self.num)
+        eta = eta[ (eta > constants.ETA_MIN) & (eta < constants.ETA_MAX) ][:self.num]
+
+        # Generate random r (mid) and phi
+        # self.df["r"] = np.random.uniform(constants.R_MIN, constants.R_MAX, self.num)
+        # self.df["eta"] = np.random.uniform(constants.ETA_MIN, constants.ETA_MAX, self.num)
+        self.df["eta"] = eta
         self.df["phi"] = np.random.uniform(constants.PHI_MIN, constants.PHI_MAX, self.num)
 
         # Calculate stuff
+        # self.df["theta"] = np.arctan2(self.df["r"], constants.ZMID)
+        # self.df["eta"] = -np.log(np.tan(self.df["theta"] / 2))
         self.df["theta"] = 2 * np.arctan(np.exp(-self.df["eta"]))
 
         # Project the lines to each layer

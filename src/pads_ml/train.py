@@ -19,16 +19,16 @@ class OneHotFullyConnectedTrainer:
 
     def __init__(
         self,
-        features_train_path: List[Path],
-        features_valid_path: List[Path],
-        labels_train_path: List[Path],
-        labels_valid_path: List[Path],
+        train_features: List[Path],
+        valid_features: List[Path],
+        train_labels: List[Path],
+        valid_labels: List[Path],
     ):
-        self.features_train_path = features_train_path
-        self.features_valid_path = features_valid_path
-        self.labels_train_path = labels_train_path
-        self.labels_valid_path = labels_valid_path
         self.batch_size = 128
+        self.train_features = train_features
+        self.valid_features = valid_features
+        self.train_labels = train_labels
+        self.valid_labels = valid_labels
         self.loader, self.valid_loader = self.load_data()
         self.n_epoch = 2
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -65,8 +65,8 @@ class OneHotFullyConnectedTrainer:
         Load data into a DataLoader
         """
         logger.info(f"Creating DataLoader ...")
-        trainset = OneHotDataset(self.features_train_path, self.labels_train_path, self.batch_size)
-        validset = OneHotDataset(self.features_valid_path, self.labels_valid_path, self.batch_size)
+        trainset = OneHotDataset(self.train_features, self.train_labels, self.batch_size)
+        validset = OneHotDataset(self.valid_features, self.valid_labels, self.batch_size)
         trainloader = DataLoader(trainset, batch_size=None)
         validloader = DataLoader(validset, batch_size=None)
         return trainloader, validloader

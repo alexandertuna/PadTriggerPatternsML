@@ -20,5 +20,5 @@ dependencies = [
 "Homepage" = "https://github.com/alexandertuna/PadTriggerPatternsML"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["pads_ml"]
 

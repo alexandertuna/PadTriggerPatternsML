@@ -20,7 +20,8 @@ LAYER = 0
 def main() -> None:
 
     name_pads = Path("data/STGCPadTrigger.np.A05.txt")
-    name_signal = Path("train/signal.2024_09_23_19_47_07.100000.parquet")
+    # name_signal = Path("signal.2024_09_24_12_58_48.1000000.parquet")
+    name_signal = Path("signal.2024_09_24_18_19_14.1000000.parquet")
     name_pdf = Path("signal.pdf")
 
     logging.info(f"Opening pads file: {name_pads}")
@@ -43,9 +44,11 @@ def draw_pads_and_signal(layer: pd.DataFrame, signal: pd.DataFrame, pdf: PdfPage
     z = constants.ZS[LAYER]
     x = z * np.tan(signal["theta"]) * np.cos(signal["phi"])
     y = z * np.tan(signal["theta"]) * np.sin(signal["phi"])
-    _, _, _, im = ax.hist2d(x, y, bins=100, range=[[-1000, 1000], [1000, 5000]], cmap="gist_heat_r")
+    xbins = np.linspace(*get_lim("x"), 100)
+    ybins = np.linspace(*get_lim("y"), 100)
+    _, _, _, im = ax.hist2d(x, y, bins=[xbins, ybins], cmin=0.5, cmap="autumn_r")
     cbar = fig.colorbar(im, ax=ax)
-    cbar.set_label("Events")
+    cbar.set_label("Simulated muons")
 
     # draw quads (unions of pads)
     union = unary_union(layer["geometry"])
@@ -58,7 +61,7 @@ def draw_pads_and_signal(layer: pd.DataFrame, signal: pd.DataFrame, pdf: PdfPage
     ax.set_ylim(*get_lim("y"))
     ax.set_xlabel("x [mm]")
     ax.set_ylabel("y [mm]")
-    plt.subplots_adjust(left=0.18, right=0.95, top=0.95, bottom=0.12)
+    plt.subplots_adjust(left=0.18, right=0.90, top=0.95, bottom=0.12)
     pdf.savefig(fig)
     plt.close()
 

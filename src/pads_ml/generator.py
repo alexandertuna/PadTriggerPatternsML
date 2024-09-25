@@ -13,7 +13,7 @@ class SignalGenerator:
     def __init__(self, num: int, pads: Pads):
 
         logger.info("Creating lines and traversing pads")
-        lines = Lines(num)
+        lines = Lines(num, smear=10.0)
         traverser = Traverser(lines, pads)
 
         if len(lines.df) != len(traverser.df):

@@ -13,7 +13,7 @@ from pathlib import Path
 import logging
 logger = logging.getLogger(__name__)
 
-from .model import OneHotFullyConnected
+from pads_ml.model import OneHotFullyConnected
 
 class OneHotFullyConnectedTrainer:
 
@@ -24,12 +24,12 @@ class OneHotFullyConnectedTrainer:
         train_labels: List[Path],
         valid_labels: List[Path],
     ):
-        self.batch_size = 128
+        self.batch_size = 256
         self.train_features = train_features
         self.valid_features = valid_features
         self.train_labels = train_labels
         self.valid_labels = valid_labels
-        self.loader, self.valid_loader = self.load_data()
+        self.train_loader, self.valid_loader = self.load_data()
         self.n_epoch = 2
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logger.info(f"Device: {self.device}")
@@ -43,22 +43,38 @@ class OneHotFullyConnectedTrainer:
         self.model.train()
         optimizer = AdamW(self.model.parameters(), lr=0.001)
         criterion = nn.BCELoss()
-        logger.info("Starting epoch loop ...")
+        logger.info("Starting epoch loop")
         for epoch in range(self.n_epoch):
-            total_loss, n_loss = 0, 0
-            for features, labels in self.loader:
+            logger.info(f"Epoch {epoch}")
+            for features, labels in self.train_loader:
+                batch_size = features.shape[0]
                 features, labels = features.to(self.device), labels.to(self.device)
                 optimizer.zero_grad()
                 output = self.model(features)
                 loss = criterion(output, labels)
                 loss.backward()
                 optimizer.step()
-                total_loss += loss.item()
-                n_loss += 1
-            avg_loss = total_loss / n_loss
-            logger.info(f"Epoch {epoch}, loss: {avg_loss}")
+                if batch_size != self.batch_size:
+                    self.evaluate()
+            # logger.info(f"Training loss (last): {loss.item()}")
+            # self.evaluate()
         self.model.eval()
 
+    def evaluate(self):
+        """
+        Evaluate the model
+        """
+        self.model.eval()
+        criterion = nn.BCELoss()
+        total_loss, n_loss = 0, 0
+        for features, labels in self.valid_loader:
+            features, labels = features.to(self.device), labels.to(self.device)
+            output = self.model(features)
+            loss = criterion(output, labels)
+            total_loss += loss.item()
+            n_loss += 1
+        avg_loss = total_loss / n_loss
+        logger.info(f"Validation loss: {avg_loss}")
 
     def load_data(self) -> Tuple[DataLoader, DataLoader]:
         """
@@ -71,6 +87,11 @@ class OneHotFullyConnectedTrainer:
         validloader = DataLoader(validset, batch_size=None)
         return trainloader, validloader
 
+    def save(self, path: Path) -> None:
+        """
+        Save the model
+        """
+        torch.save(self.model.state_dict(), path)
 
 class OneHotDataset(IterableDataset):
 
@@ -90,6 +111,7 @@ class OneHotDataset(IterableDataset):
 
         for fpath, lpath in zip(self.feature_paths, self.label_paths):
 
+            # logger.info(f"Loading {fpath} and {lpath}")
             features = np.load(fpath)
             labels = np.load(lpath)
 

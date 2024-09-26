@@ -3,16 +3,21 @@ From a file of generated lines and its intersecting pads,
 draw the intersecting pads.
 """
 
-from pads_ml.pads import Pads
-from pads_ml import constants
-
+import argparse
 import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+from tqdm import tqdm
 
-from typing import List
+from typing import Tuple, List
 from shapely.geometry import Polygon
+
+from pads_ml.pads import Pads
+from pads_ml import constants
+
+import logging
+logging.basicConfig(level=logging.INFO)
 
 from cycler import cycler
 mpl.rcParams["axes.prop_cycle"] = cycler('color', [
@@ -26,19 +31,34 @@ mpl.rcParams["axes.prop_cycle"] = cycler('color', [
     '#d62728',
 ])
 
+# Enum
 MAX = 0
 MIN = 1
 
-def main():
-    num_lines = 20
-    gen_name = "signal.2024_09_22_12_53_38.100000.parquet"
-    # gen_name = "noise.parquet"
-    pads_name = "data/STGCPadTrigger.np.A05.txt"
-    gen = pd.read_parquet(gen_name)
-    pads = Pads(pads_name)
 
-    with PdfPages("plot.pdf") as pdf:
-        for line in range(num_lines):
+def options():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--parquet", help="Input parquet file of pad patterns", required=True)
+    parser.add_argument("--pads", help="Input file of pads geometry", required=True)
+    parser.add_argument("-n", "--num", help="Number of patterns to draw", default=20, type=int)
+    parser.add_argument("-o", "--output", help="Output pdf file to draw", default="intersecting_pads.pdf")
+    return parser.parse_args()
+
+
+def main():
+
+    # CL args
+    ops = options()
+    num_lines = ops.num
+    logging.info(f"Getting patterns from {ops.parquet}")
+    logging.info(f"Getting pads from {ops.pads}")
+    gen = pd.read_parquet(ops.parquet)
+    pads = Pads(ops.pads)
+
+    # Draw
+    logging.info(f"Drawing {num_lines} patterns to {ops.output}")
+    with PdfPages(ops.output) as pdf:
+        for line in tqdm(range(num_lines)):
             row = gen.iloc[line]
             pad_polygons = []
             for layer in range(constants.LAYERS):
@@ -48,6 +68,7 @@ def main():
                 else:
                     pad_polygons.append(pads.df.iloc[i_pad]["geometry"])
             draw(pad_polygons, pdf)
+
 
 def draw(polygons: List[Polygon], pdf: PdfPages):
     """
@@ -61,9 +82,7 @@ def draw(polygons: List[Polygon], pdf: PdfPages):
         x, y = poly.exterior.xy
         ax.plot(x, y, label=f"L{ip}")
         ax.fill(x, y, alpha=0.1)
-    ax.legend(frameon=False,
-              fontsize=6,
-              )
+    ax.legend(frameon=False, fontsize=6)
     min_x, min_y = feature_xy(polygons, MIN)
     max_x, max_y = feature_xy(polygons, MAX)
     buffer_x = 0.12 * (max_x - min_x)
@@ -72,16 +91,14 @@ def draw(polygons: List[Polygon], pdf: PdfPages):
     ax.set_ylabel("y [mm]")
     ax.set_xlim(min_x - buffer_x, max_x + buffer_x)
     ax.set_ylim(min_y - buffer_y, max_y + buffer_y)
-    # adjust the margins by hand
     plt.subplots_adjust(left=0.18, right=0.95, top=0.95, bottom=0.12)
-
     pdf.savefig()
     plt.close()
 
 def feature_xy(
         polygons: List[Polygon],
         feature: int,
-    ) -> List:
+    ) -> Tuple[float]:
     """
     Return a feature of a list of polygons
     """

@@ -2,9 +2,7 @@
 Given a file of pad positions, draw each layer of pads.
 """
 
-from pads_ml.pads import Pads
-from pads_ml import constants
-
+import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -12,17 +10,30 @@ from matplotlib.backends.backend_pdf import PdfPages
 from pathlib import Path
 from shapely.ops import unary_union
 
+from pads_ml.pads import Pads
+from pads_ml import constants
+
 import logging
 logging.basicConfig(level=logging.INFO)
 
 LAYER = 0
 
+
+def options():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--pads", help="Input file of pads geometry", required=True)
+    parser.add_argument("--parquet", help="Input parquet file of pads patterns", required=True)
+    parser.add_argument("-o", "--output", help="Output pdf file", required=True)
+    return parser.parse_args()
+
+
 def main() -> None:
 
-    name_pads = Path("data/STGCPadTrigger.np.A05.txt")
-    # name_signal = Path("signal.2024_09_24_12_58_48.1000000.parquet")
-    name_signal = Path("signal.2024_09_24_18_19_14.1000000.parquet")
-    name_pdf = Path("signal.pdf")
+    # CL args
+    ops = options()
+    name_pads = Path(ops.pads)
+    name_signal = Path(ops.parquet)
+    name_pdf = Path(ops.output)
 
     logging.info(f"Opening pads file: {name_pads}")
     pads = Pads(name_pads)
@@ -73,6 +84,7 @@ def get_lim(axis: str, buffer: float=0.10):
                (constants.SECTOR_YMIN, constants.SECTOR_YMAX)
     buffer = buffer * (max - min)
     return min - buffer, max + buffer
+
 
 if __name__ == "__main__":
     main()

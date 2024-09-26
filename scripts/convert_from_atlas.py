@@ -1,7 +1,7 @@
 import argparse
 from pads_ml.pads import Pads
-import logging
 
+import logging
 logging.basicConfig(level=logging.INFO)
 
 

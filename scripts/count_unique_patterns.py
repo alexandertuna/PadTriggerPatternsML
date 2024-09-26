@@ -1,49 +1,42 @@
+import argparse
 import numpy as np
 import pandas as pd
-from pathlib import Path
 
 from pads_ml import constants
 
+import logging
+logging.basicConfig(level=logging.INFO)
+
+
+def options():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", help="Input dataframe (parquet) for checking pad patterns", required=True)
+    return parser.parse_args()
+
+
 def main():
 
-    # tmp checking 
-    # signal_path = Path("signal.2024_09_24_16_33_51.1000000.parquet")
-    signal_path = Path("signal.2024_09_24_21_50_57.1000000.parquet")
+    # CL args
+    ops = options()
+
+    # Get input dataframe
+    logging.info(f"Reading data from {ops.i}")
+    df = pd.read_parquet(ops.i)
+
+    # Only consider pads from this dataframe
     cols = [f"pad_{i}" for i in range(constants.LAYERS)]
-    df = pd.read_parquet(signal_path)
     df = df[cols]
-    print(df)
+    logging.info(df)
+    logging.info(f"Input dataframe shape: {df.shape}")
+
+    # Drop duplicates
     nodups = df.drop_duplicates()
-    print("nodups.shape", nodups.shape)
-    #print(nodups)
-    allvalid = nodups[ nodups.apply(lambda row: all(row != -1), axis=1) ]
-    print("allvalid.shape", allvalid.shape)
-    # print(allvalid)
+    logging.info(f"Drop duplicates shape: {nodups.shape}")
 
-    return
+    # Only consider valid pads
+    allvalid = nodups[ nodups.apply(lambda row: all(row != -1) & all(row != np.nan), axis=1) ]
+    logging.info(f"Only valid pads shape: {allvalid.shape}")
 
-    # paths
-    features_path = Path("features.2024_09_24_12_58_48.1000000.npy")
-    labels_path = Path("labels.2024_09_24_12_58_48.1000000.npy")
-
-    # load data
-    features = np.load(features_path)
-    labels = np.load(labels_path)
-
-    # separate signal and noise
-    is_signal = labels[:, 0] == 1
-    signal = features[is_signal]
-    noise = features[~is_signal]
-    print(signal.shape)
-    print(signal)
-    print(noise.shape)
-    print(noise)
-
-    # count unique rows
-    unique_signal = np.unique(signal, axis=0)
-    unique_noise = np.unique(noise, axis=0)
-    print(f"Unique signal: {unique_signal.shape[0]}")
-    print(f"Unique noise: {unique_noise.shape[0]}")
 
 if __name__ == "__main__":
     main()

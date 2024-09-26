@@ -10,10 +10,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 class SignalGenerator:
-    def __init__(self, num: int, pads: Pads):
+    def __init__(self, num: int, pads: Pads, smear: float):
 
-        logger.info("Creating lines and traversing pads")
-        lines = Lines(num, smear=10.0)
+        logger.info(f"Creating lines and traversing pads with smear={smear}")
+        lines = Lines(num, smear=smear)
         traverser = Traverser(lines, pads)
 
         if len(lines.df) != len(traverser.df):

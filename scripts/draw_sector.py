@@ -2,27 +2,35 @@
 Given a file of pad positions, draw each layer of pads.
 """
 
-from pads_ml.pads import Pads
-from pads_ml import constants
-
+import argparse
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+
+from pads_ml.pads import Pads
+from pads_ml import constants
 
 import logging
 logging.basicConfig(level=logging.INFO)
 
 
+def options():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", help="Input file of pads geometry", required=True)
+    parser.add_argument("-o", help="Output pdf file", required=True)
+    return parser.parse_args()
+
+
 def main() -> None:
 
-    name_i = "data/STGCPadTrigger.np.A05.txt"
-    name_o = "detector.pdf"
+    # CL args
+    ops = options()
 
-    logging.info(f"Opening pads file: {name_i}")
-    pads = Pads(name_i)
+    logging.info(f"Opening pads file: {ops.i}")
+    pads = Pads(ops.i)
 
-    logging.info(f"Drawing pads to: {name_o}")
-    with PdfPages(name_o) as pdf:
+    logging.info(f"Drawing pads to: {ops.o}")
+    with PdfPages(ops.o) as pdf:
         for layer in range(constants.LAYERS):
             logging.info(f"Drawing layer: {layer}")
             draw_layer(pads.layer[layer], pdf)

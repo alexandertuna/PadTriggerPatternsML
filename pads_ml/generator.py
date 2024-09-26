@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
 
-from . import constants
-from .pads import Pads
-from .lines import Lines
-from .traverser import Traverser
+from pads_ml import constants
+from pads_ml.pads import Pads
+from pads_ml.lines import Lines
+from pads_ml.traverser import Traverser
 
 import logging
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ class SignalGenerator:
         if len(lines.df) != len(traverser.df):
             raise ValueError(f"Lines and Traverser have different lengths: {len(lines.df)} != {len(traverser.df)}")
 
-        # drop the per-layer columns from lines
+        logger.info("Dropping per-layer info")
         columns = [
             f"{coord}_{layer}"
             for coord in ["x", "y", "quad", "point"]

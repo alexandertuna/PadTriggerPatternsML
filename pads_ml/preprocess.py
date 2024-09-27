@@ -23,7 +23,6 @@ class DataPreparer:
         signal_one_hot = self.convert_to_one_hot(signal)
         noise_one_hot = self.convert_to_one_hot(noise)
 
-        MINIMUM = 8
         self.features, self.labels = self.combine_and_shuffle(signal_one_hot, noise_one_hot)
 
 

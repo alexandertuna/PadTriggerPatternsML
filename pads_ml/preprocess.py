@@ -20,7 +20,11 @@ class DataPreparer:
         columns = [f"pad_{layer}" for layer in range(constants.LAYERS)]
         def one_hot(df: pd.DataFrame) -> pd.DataFrame:
             df = pd.get_dummies(df, columns=columns, prefix=[""]*len(columns), prefix_sep="")
-            df = df[ np.arange(constants.PADS).astype(str) ]
+            try:
+                df = df[ np.arange(constants.PADS).astype(str) ]
+            except KeyError:
+                logger.error("Some pads werent found in the data. Please generate more. At least 10_000?")
+                raise
             return df.values
 
         signal, noise = one_hot(self.signal), one_hot(self.noise)
@@ -44,7 +48,7 @@ class DataPreparer:
 
     def prepare2(self) -> None:
 
-        raise Exception("This is not working")
+        raise Exception("This is more robust, but slower")
         signal = self.remove_negative_ones(self.signal)
         noise = self.remove_negative_ones(self.noise)
 
@@ -56,14 +60,14 @@ class DataPreparer:
 
     def remove_negative_ones(self, df: pd.DataFrame) -> None:
 
-        raise Exception("This is not working")
+        raise Exception("This is more robust, but slower")
         df[ df == -1 ] = np.nan
         return df
 
 
     def convert_to_one_hot(self, df: pd.DataFrame) -> np.array:
 
-        raise Exception("This is not working")
+        raise Exception("This is more robust, but slower")
         # Get the pad columns as np.array, and mask nan
         pad_columns = df[ [f"pad_{i}" for i in range(constants.LAYERS)] ].values
         valid_entries_mask = ~np.isnan(pad_columns)
@@ -87,7 +91,7 @@ class DataPreparer:
 
     def combine_and_shuffle(self, signal: np.array, noise: np.array) -> Tuple[np.array, np.array]:
 
-        raise Exception("This is not working")
+        raise Exception("This is more robust, but slower")
         signal = signal[ (signal.sum(axis=1) >= constants.PADS_REQUIRED) ]
         noise = noise[ : len(signal) ]
         features = np.concatenate([signal, noise], axis=0)

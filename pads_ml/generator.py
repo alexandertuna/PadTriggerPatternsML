@@ -5,9 +5,39 @@ from pads_ml import constants
 from pads_ml.pads import Pads
 from pads_ml.lines import Lines
 from pads_ml.traverser import Traverser
+from pads_ml.preprocess import DataPreparer
 
 import logging
 logger = logging.getLogger(__name__)
+
+class EverythingGenerator:
+
+    def __init__(self, num: int, pads: Pads, smear: float, onehot: bool) -> None:
+
+        self.onehot = onehot
+
+        logger.info("Creating signal")
+        self.signal = SignalGenerator(num, pads, smear)
+
+        logger.info("Creating noise")
+        self.noise = NoiseGenerator(num, pads)
+
+        if self.onehot:
+            logger.info("Preparing data")
+            dp = DataPreparer(self.signal.df, self.noise.df)
+            dp.prepare()
+            self.features = dp.features
+            self.labels = dp.labels
+
+
+    def save(self, prefix: str) -> None:
+        logger.info("Saving to file")
+        self.signal.df.to_parquet(f"{prefix}.signal.parquet")
+        self.noise.df.to_parquet(f"{prefix}.noise.parquet")
+        if self.onehot:
+            np.save(f"{prefix}.features.npy", self.features)
+            np.save(f"{prefix}.labels.npy", self.labels)
+
 
 class SignalGenerator:
     def __init__(self, num: int, pads: Pads, smear: float):

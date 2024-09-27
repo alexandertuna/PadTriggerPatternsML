@@ -1,9 +1,6 @@
 import argparse
-import numpy as np
 import time
-from pathlib import Path
-from pads_ml.generator import SignalGenerator, NoiseGenerator
-from pads_ml.preprocess import DataPreparer
+from pads_ml.generator import EverythingGenerator
 from pads_ml.pads import Pads
 
 import logging
@@ -27,24 +24,9 @@ def main():
     now = time.strftime("%Y_%m_%d_%H_%M_%S")
     num = ops.num
 
-    logging.info("Generating signal")
-    signal = SignalGenerator(num, pads, ops.smear)
-    logging.info(signal.df)
-
-    logging.info("Generating noise")
-    noise = NoiseGenerator(num, pads)
-    logging.info(noise.df)
-
-    logging.info("Writing to file")
-    signal.df.to_parquet(f"signal.{now}.{num}.parquet")
-    noise.df.to_parquet(f"noise.{now}.{num}.parquet")
-
-    if ops.onehot:
-        logging.info("Converting to one-hot np.array")
-        dp = DataPreparer(signal.df, noise.df)
-        dp.prepare()
-        np.save(f"features.{now}.{num}.npy", dp.features)
-        np.save(f"labels.{now}.{num}.npy", dp.labels)
+    logging.info("Generating everything")
+    gen = EverythingGenerator(num, pads, ops.smear, ops.onehot)
+    gen.save(f"gen.{now}.{num}")
 
 
 if __name__ == "__main__":

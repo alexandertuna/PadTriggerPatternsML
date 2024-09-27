@@ -1,9 +1,9 @@
 import pandas as pd
 import geopandas as gpd
 
-from . import constants
-from .pads import Pads
-from .lines import Lines
+from pads_ml import constants
+from pads_ml.pads import Pads
+from pads_ml.lines import Lines
 
 import logging
 logger = logging.getLogger(__name__)

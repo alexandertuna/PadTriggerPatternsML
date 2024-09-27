@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from . import constants
+from pads_ml import constants
 from typing import Tuple
 
 import logging
@@ -14,9 +14,37 @@ class DataPreparer:
         self.signal = signal
         self.noise = noise
 
-
     def prepare(self) -> None:
 
+        # convert to one-hot
+        columns = [f"pad_{layer}" for layer in range(constants.LAYERS)]
+        def one_hot(df: pd.DataFrame) -> pd.DataFrame:
+            df = pd.get_dummies(df, columns=columns, prefix=[""]*len(columns), prefix_sep="")
+            df = df[ np.arange(constants.PADS).astype(str) ]
+            return df.values
+
+        signal, noise = one_hot(self.signal), one_hot(self.noise)
+
+        # remove rows with too few pads
+        signal = signal[ (signal.sum(axis=1) >= constants.PADS_REQUIRED) ]
+        noise = noise[ : len(signal) ]
+
+        # combine, make labels
+        self.features = np.concatenate([signal, noise], axis=0)
+        self.labels = np.zeros(shape=(len(self.features), 1))
+        self.labels[:len(signal), :] = 1
+
+        # shuffle
+        indices = np.arange(len(self.features))
+        np.random.shuffle(indices)
+        self.features = self.features[indices]
+        self.labels = self.labels[indices]
+
+
+
+    def prepare2(self) -> None:
+
+        raise Exception("This is not working")
         signal = self.remove_negative_ones(self.signal)
         noise = self.remove_negative_ones(self.noise)
 
@@ -28,12 +56,14 @@ class DataPreparer:
 
     def remove_negative_ones(self, df: pd.DataFrame) -> None:
 
+        raise Exception("This is not working")
         df[ df == -1 ] = np.nan
         return df
 
 
     def convert_to_one_hot(self, df: pd.DataFrame) -> np.array:
 
+        raise Exception("This is not working")
         # Get the pad columns as np.array, and mask nan
         pad_columns = df[ [f"pad_{i}" for i in range(constants.LAYERS)] ].values
         valid_entries_mask = ~np.isnan(pad_columns)
@@ -57,6 +87,7 @@ class DataPreparer:
 
     def combine_and_shuffle(self, signal: np.array, noise: np.array) -> Tuple[np.array, np.array]:
 
+        raise Exception("This is not working")
         signal = signal[ (signal.sum(axis=1) >= constants.PADS_REQUIRED) ]
         noise = noise[ : len(signal) ]
         features = np.concatenate([signal, noise], axis=0)

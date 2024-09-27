@@ -28,6 +28,10 @@ def main():
         & (pads.df["sector"] == 4)
     ]
 
+    # sort by layer, y, x
+    logging.info("Sorting pads")
+    df_A05 = df_A05.sort_values(by=["layer", "y0", "x0"])
+
     # write to disk
     logging.info(f"Writing pads to {ops.o}")
     df_A05.to_csv(ops.o, sep=' ', index=False)

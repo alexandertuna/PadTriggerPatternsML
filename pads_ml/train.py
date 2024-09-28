@@ -67,14 +67,18 @@ class OneHotFullyConnectedTrainer:
         self.model.eval()
         criterion = nn.BCELoss()
         total_loss, n_loss = 0, 0
+        total_correct, total_samples = 0, 0
         for features, labels in self.valid_loader:
             features, labels = features.to(self.device), labels.to(self.device)
             output = self.model(features)
             loss = criterion(output, labels)
             total_loss += loss.item()
             n_loss += 1
+            total_correct += (output > 0.5).eq(labels > 0.5).sum().item()
+            total_samples += labels.shape[0]
         avg_loss = total_loss / n_loss
-        logger.info(f"Validation loss: {avg_loss}")
+        accuracy = total_correct / total_samples
+        logger.info(f"Validation loss: {avg_loss:0.8f}. Accuracy: {accuracy:0.8f}")
 
     def load_data(self) -> Tuple[DataLoader, DataLoader]:
         """

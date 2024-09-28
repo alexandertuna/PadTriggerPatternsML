@@ -17,17 +17,19 @@ class DataPreparer:
     def prepare(self) -> None:
 
         # convert to one-hot
-        columns = [f"pad_{layer}" for layer in range(constants.LAYERS)]
-        def one_hot(df: pd.DataFrame) -> pd.DataFrame:
-            df = pd.get_dummies(df, columns=columns, prefix=[""]*len(columns), prefix_sep="")
-            try:
-                df = df[ np.arange(constants.PADS).astype(str) ]
-            except KeyError:
-                logger.error("Some pads werent found in the data. Please generate more. At least 10_000?")
-                raise
-            return df.values
+        def onehotify(df: pd.DataFrame) -> np.array:
 
-        signal, noise = one_hot(self.signal), one_hot(self.noise)
+            onehot = pd.DataFrame({
+                f"pad_{layer}": pd.Categorical(
+                    df[f"pad_{layer}"],
+                    categories=constants.PADS_PER_LAYER[layer]
+                )
+                for layer in range(constants.LAYERS)
+            })
+
+            return pd.get_dummies(onehot).values
+
+        signal, noise = onehotify(self.signal), onehotify(self.noise)
 
         # remove rows with too few pads
         signal = signal[ (signal.sum(axis=1) >= constants.PADS_REQUIRED) ]

@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 PHI_MIN = np.pi/2 - np.pi/12
 PHI_MAX = np.pi/2 + np.pi/12
@@ -11,15 +12,21 @@ PADS = 1739
 LAYERS = 8
 QUADS = 3
 
-PADS_PER_LAYER = {}
-PADS_PER_LAYER[0] = list(range(0, 218))
-PADS_PER_LAYER[1] = list(range(218, 430))
-PADS_PER_LAYER[2] = list(range(430, 671))
-PADS_PER_LAYER[3] = list(range(671, 920))
-PADS_PER_LAYER[4] = list(range(920, 1124))
-PADS_PER_LAYER[5] = list(range(1124, 1328))
-PADS_PER_LAYER[6] = list(range(1328, 1531))
-PADS_PER_LAYER[7] = list(range(1531, 1739))
+PADS_PER_LAYER = [
+    range(0, 218),
+    range(218, 430),
+    range(430, 671),
+    range(671, 920),
+    range(920, 1124),
+    range(1124, 1328),
+    range(1328, 1531),
+    range(1531, 1739),
+]
+
+PADS_TYPE = [
+    pd.CategoricalDtype(categories=PADS_PER_LAYER[layer])
+    for layer in range(LAYERS)
+]
 
 PADS_REQUIRED = 8
 

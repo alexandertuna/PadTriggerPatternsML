@@ -12,7 +12,14 @@ logger = logging.getLogger(__name__)
 
 class EverythingGenerator:
 
-    def __init__(self, num: int, pads: Pads, smear: float, onehot: bool) -> None:
+    def __init__(
+            self,
+            num: int,
+            pads: Pads,
+            smear: float,
+            onehot: bool,
+            bkg: str,
+        ) -> None:
 
         self.onehot = onehot
 
@@ -20,7 +27,12 @@ class EverythingGenerator:
         self.signal = SignalGenerator(num, pads, smear)
 
         logger.info("Creating noise")
-        self.noise = NoiseGenerator(num, pads)
+        if bkg == "random":
+            self.noise = NoiseGenerator(num, pads)
+        elif bkg == "smear":
+            self.noise = SignalGenerator(num, pads, smear*5)
+        else:
+            raise ValueError(f"Unknown background type: {bkg}")
 
         if self.onehot:
             logger.info("Preparing data")

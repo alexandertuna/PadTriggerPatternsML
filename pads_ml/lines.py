@@ -9,7 +9,7 @@ import geopandas as gpd
 # np.random.seed(42)
 from shapely.geometry import Point
 
-from . import constants
+from pads_ml import constants
 
 import logging
 logger = logging.getLogger(__name__)

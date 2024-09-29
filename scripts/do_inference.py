@@ -72,11 +72,10 @@ def get_labels_and_predictions(
     # Features and model
     features = np.concatenate([np.load(path) for path in features_paths])
     labels = np.concatenate([np.load(path) for path in labels_paths])
-    model = torch.load(model_path)
     logging.info(f"Features shape: {features.shape}")
 
     # Inference
-    inference = Inference(model)
+    inference = Inference(model_path)
     predictions = inference.predict(torch.Tensor(features))
     return features, labels, predictions.detach().numpy()
 

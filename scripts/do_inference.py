@@ -28,6 +28,8 @@ def main() -> None:
     labels_paths = sorted(list(Path().glob(ops.labels)))
     model_path = Path(ops.model)
     pdf_path = Path(ops.pdf)
+
+    # announce
     logging.info(f"Features:")
     for path in features_paths:
         logging.info(f"  {path}")

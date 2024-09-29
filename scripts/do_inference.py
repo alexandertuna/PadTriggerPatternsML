@@ -30,7 +30,7 @@ def main() -> None:
     pdf_path = Path(ops.pdf)
 
     # Get labels and predictions
-    labels, predictions = get_labels_and_predictions(
+    features, labels, predictions = get_labels_and_predictions(
         features_path,
         labels_path,
         model_path
@@ -40,7 +40,13 @@ def main() -> None:
 
     # Make plots
     with PdfPages(pdf_path) as pdf:
-        plot(
+        plot_all(
+            labels,
+            predictions,
+            pdf,
+        )
+        plot_unique(
+            features,
             labels,
             predictions,
             pdf,
@@ -51,7 +57,7 @@ def get_labels_and_predictions(
     features_path: Path,
     labels_path: Path,
     model_path: Path
-) -> Tuple[np.array, np.array]:
+) -> Tuple[np.array, np.array, np.array]:
 
     # Features and model
     features = np.load(features_path)
@@ -62,10 +68,10 @@ def get_labels_and_predictions(
     # Inference
     inference = Inference(model)
     predictions = inference.predict(torch.Tensor(features))
-    return labels, predictions.detach().numpy()
+    return features, labels, predictions.detach().numpy()
 
 
-def plot(
+def plot_all(
     labels: np.array,
     predictions: np.array,
     pdf: PdfPages,
@@ -74,13 +80,62 @@ def plot(
     is_signal = labels == 1
 
     fig, ax = plt.subplots(figsize=(4, 4))
-    # bins = np.linspace(-50, 0, 100)
-    bins = np.linspace(-0.0005, 0, 100)
+    bins = np.linspace(-10, 0, 100)
+    # bins = np.linspace(-0.0005, 0, 100)
     ax.hist(np.log(predictions[is_signal]), bins=bins, alpha=0.5, label="Signal")
     ax.hist(np.log(predictions[~is_signal]), bins=bins, alpha=0.5, label="Noise")
-    ax.set_xlabel("Log(Loss)")
-    ax.set_ylabel("Density")
+    ax.set_xlabel("log(Probability)")
+    ax.set_ylabel("Counts")
     ax.semilogy()
+    ax.legend()
+    plt.subplots_adjust(left=0.18, right=0.95, top=0.95, bottom=0.12)
+    pdf.savefig(fig)
+    plt.close()
+
+
+def plot_unique(
+    features: np.array,
+    labels: np.array,
+    predictions: np.array,
+    pdf: PdfPages,
+) -> None:
+
+    is_signal = np.flatnonzero(labels == 1)
+
+    logging.info(f"Getting unique (slow)")
+    unique_rows, first_indices = np.unique(features, axis=0, return_index=True)
+    first_signal_indices = np.intersect1d(is_signal, first_indices)
+    logging.info(f"unique_rows: {unique_rows.shape}")
+    logging.info(f"is_signal: {is_signal.shape}")
+    logging.info(f"first_signal_indices: {first_signal_indices.shape}")
+
+    fig, ax = plt.subplots(figsize=(4, 4))
+    bins = np.linspace(-2, 0, 100)
+    ax.hist(np.log(predictions[first_signal_indices]), bins=bins, alpha=0.5, label="Signal (unique)")
+    ax.set_xlabel("log(Probability)")
+    ax.set_ylabel("Counts")
+    ax.semilogy()
+    ax.legend()
+    plt.subplots_adjust(left=0.18, right=0.95, top=0.95, bottom=0.12)
+    pdf.savefig(fig)
+    plt.close()
+
+    fig, ax = plt.subplots(figsize=(4, 4))
+    bins = np.linspace(0, 1, 100)
+    ax.hist(predictions[first_signal_indices], bins=bins, alpha=0.5, label="Signal (unique)")
+    ax.set_xlabel("Probability")
+    ax.set_ylabel("Counts")
+    ax.semilogy()
+    ax.legend()
+    plt.subplots_adjust(left=0.18, right=0.95, top=0.95, bottom=0.12)
+    pdf.savefig(fig)
+    plt.close()
+
+    fig, ax = plt.subplots(figsize=(4, 4))
+    bins = np.linspace(0, 1, 100)
+    ax.hist(predictions[first_signal_indices], bins=bins, alpha=0.5, label="Signal (unique)")
+    ax.set_xlabel("Probability")
+    ax.set_ylabel("Counts")
     ax.legend()
     plt.subplots_adjust(left=0.18, right=0.95, top=0.95, bottom=0.12)
     pdf.savefig(fig)

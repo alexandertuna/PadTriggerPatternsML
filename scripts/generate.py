@@ -1,5 +1,6 @@
 import argparse
 import time
+from pads_ml import constants
 from pads_ml.generator import EverythingGenerator
 from pads_ml.pads import Pads
 
@@ -9,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 
 def options():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--pads", help="Input file of pads geometry", required=True)
+    parser.add_argument("--pads", help="Input file of pads geometry", default=constants.PADS_PATH)
     parser.add_argument("--smear", help="Amount of gaussian smearing [mm] when projecting to each layer", default=10.0, type=float)
     parser.add_argument("-n", "--num", help="Number of line to simulate", default=10_000, type=int)
     parser.add_argument("--background", help="Type of background simulation", default="smear", choices=["smear", "random"])

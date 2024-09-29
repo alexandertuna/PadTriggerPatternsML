@@ -1,5 +1,9 @@
 import numpy as np
 import pandas as pd
+from pathlib import Path
+
+CONSTANTS_DIR = Path(__file__).resolve().parent
+PADS_PATH = CONSTANTS_DIR / "../data/pads.txt"
 
 PHI_MIN = np.pi/2 - np.pi/12
 PHI_MAX = np.pi/2 + np.pi/12

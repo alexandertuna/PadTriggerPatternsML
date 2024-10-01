@@ -21,9 +21,9 @@ LAYER = 0
 
 def options():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--pads", help="Input file of pads geometry", required=True)
-    parser.add_argument("--parquet", help="Input parquet file of pads patterns", required=True)
-    parser.add_argument("-o", "--output", help="Output pdf file", required=True)
+    parser.add_argument("--pads", help="Input file of pads geometry", default=constants.PADS_PATH)
+    parser.add_argument("-i", "--input", help="Input parquet file of pads patterns", required=True)
+    parser.add_argument("-o", "--output", help="Output pdf file", default="draw_signal.pdf")
     return parser.parse_args()
 
 
@@ -32,7 +32,7 @@ def main() -> None:
     # CL args
     ops = options()
     name_pads = Path(ops.pads)
-    name_signal = Path(ops.parquet)
+    name_signal = Path(ops.input)
     name_pdf = Path(ops.output)
 
     logging.info(f"Opening pads file: {name_pads}")
@@ -72,6 +72,7 @@ def draw_pads_and_signal(layer: pd.DataFrame, signal: pd.DataFrame, pdf: PdfPage
     ax.set_ylim(*get_lim("y"))
     ax.set_xlabel("x [mm]")
     ax.set_ylabel("y [mm]")
+    ax.tick_params(top=True, right=True)
     plt.subplots_adjust(left=0.18, right=0.90, top=0.95, bottom=0.12)
     pdf.savefig(fig)
     plt.close()

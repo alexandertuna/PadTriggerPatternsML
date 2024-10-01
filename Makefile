@@ -46,6 +46,16 @@ format:
 # PROJECT RULES                                                                 #
 #################################################################################
 
+.PHONY: generate
+generate:
+	rm -f gen.*
+	rm -f train/gen.*
+	rm -f valid/gen.*
+	for i in {0..9}; do $(PYTHON_INTERPRETER) scripts/generate.py -n 100_000 --onehot; done
+	mv gen.* train/
+	for i in {0..1}; do $(PYTHON_INTERPRETER) scripts/generate.py -n 100_000 --onehot; done
+	mv gen.* valid/
+
 .PHONY: draw_signal
 draw_signal:
 	$(PYTHON_INTERPRETER) scripts/generate.py -n 1_000_000

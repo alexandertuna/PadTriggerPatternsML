@@ -12,6 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from pads_ml import constants
+from pads_ml.utils import undo_onehot
 from pads_ml.pads import Pads
 from pads_ml.inference import Inference
 
@@ -99,13 +100,15 @@ class DrawHighestScore:
 
 
     def get_unique_ranking(self) -> np.array:
-        logger.info(f"Getting unique ranking (slow)")
-        _, unique_indices = np.unique(self.features, axis=0, return_index=True)
+        logger.info(f"Getting unique ranking")
+        arr = undo_onehot(self.features)
+        _, unique_indices = np.unique(arr, axis=0, return_index=True)
         # unique_indices = np.arange(len(self.features))
         return unique_indices, np.flip(np.argsort(self.predictions[unique_indices], axis=0)).squeeze()
 
 
     def draw_highest_score(self) -> None:
+        logger.info(f"Drawing highest score")
         with PdfPages(self.pdf_path) as pdf:
             for i in range(self.num):
                 self.draw_feature(i, pdf)

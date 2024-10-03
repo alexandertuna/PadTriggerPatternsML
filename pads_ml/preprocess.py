@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 
 from pads_ml import constants
+from pads_ml import utils
 from typing import Tuple
 
 import logging
@@ -16,20 +17,7 @@ class DataPreparer:
 
     def prepare(self) -> None:
 
-        # convert to one-hot
-        def onehotify(df: pd.DataFrame) -> np.array:
-
-            onehot = pd.DataFrame({
-                f"pad_{layer}": pd.Categorical(
-                    df[f"pad_{layer}"],
-                    categories=constants.PADS_PER_LAYER[layer]
-                )
-                for layer in range(constants.LAYERS)
-            })
-
-            return pd.get_dummies(onehot).values
-
-        signal, noise = onehotify(self.signal), onehotify(self.noise)
+        signal, noise = utils.onehotify(self.signal), utils.onehotify(self.noise)
         logger.info(f"Signal shape, noise shape: {signal.shape}, {noise.shape}")
 
         # remove rows with too few pads

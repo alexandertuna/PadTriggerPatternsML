@@ -50,17 +50,37 @@ class DrawHighestScore:
         self.model_path = model_path
         self.pdf_path = pdf_path
         self.inference = Inference(model_path)
-
-
-    def draw(self) -> None:
         self.pads_union = self.get_pads_union()
+        self.processed = False
+
+
+    def process_data(self) -> None:
         self.features, self.labels = self.get_features_and_labels()
         self.predictions = self.get_predictions()
         self.unique_indices, self.ranking = self.get_unique_ranking()
         self.features = self.features[self.unique_indices]
         self.labels = self.labels[self.unique_indices]
         self.predictions = self.predictions[self.unique_indices]
+        self.processed = True
+
+
+    def draw(self) -> None:
+        if not self.processed:
+            self.process_data()
         self.draw_highest_score()
+
+
+    def write(self) -> None:
+        fname = Path("features.ranked.npy")
+        logger.info(f"Writing ranked features to {fname}")
+        if not self.processed:
+            self.process_data()
+        features = self.features[self.ranking][:self.num]
+        print("self.features.shape", self.features.shape)
+        print("self.ranking.shape", self.ranking.shape)
+        print("self.features[self.ranking].shape", self.features[self.ranking].shape)
+        print("features.shape", features.shape)
+        np.save(fname, features)
 
 
     def get_pads_union(self) -> int: # honestly idk what this returns
@@ -82,7 +102,7 @@ class DrawHighestScore:
         logger.info(f"Getting unique ranking (slow)")
         _, unique_indices = np.unique(self.features, axis=0, return_index=True)
         # unique_indices = np.arange(len(self.features))
-        return unique_indices, np.flip(np.argsort(self.predictions[unique_indices], axis=0))
+        return unique_indices, np.flip(np.argsort(self.predictions[unique_indices], axis=0)).squeeze()
 
 
     def draw_highest_score(self) -> None:
@@ -131,6 +151,7 @@ class DrawHighestScore:
             ax[col].set_xlabel("x [mm]")
             ax[col].set_ylabel("y [mm]")
             ax[col].set_title(f"Prediction: {prediction:.5f}", fontsize=8)
+            ax[col].tick_params(right=True, top=True)
         plt.subplots_adjust(left=0.10, right=0.98, top=0.95, bottom=0.12, wspace=0.25)
         pdf.savefig()
         plt.close()

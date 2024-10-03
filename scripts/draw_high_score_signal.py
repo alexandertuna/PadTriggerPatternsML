@@ -38,6 +38,7 @@ def main():
     # go
     drawer = DrawHighestScore(num, pads_path, features_paths, labels_paths, model_path, pdf_path)
     drawer.draw()
+    drawer.write()
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from typing import Tuple, List
 
+from pads_ml.utils import undo_onehot
 from pads_ml.inference import Inference
 
 import logging
@@ -13,10 +14,10 @@ logging.basicConfig(level=logging.INFO)
 
 def options():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--features", help="Input features npy file", required=True)
-    parser.add_argument("--labels", help="Input labels npy file", required=True)
-    parser.add_argument("--model", help="Input model pth file", required=True)
-    parser.add_argument("--pdf", help="Output pdf file for plots", required=True)
+    parser.add_argument("-f", "--features", help="Input features npy file", required=True)
+    parser.add_argument("-l", "--labels", help="Input labels npy file", required=True)
+    parser.add_argument("-m", "--model", help="Input model pth file", required=True)
+    parser.add_argument("--pdf", help="Output pdf file for plots", default="infer.pdf")
     return parser.parse_args()
 
 
@@ -88,9 +89,9 @@ def plot_all(
 
     is_signal = labels == 1
 
-    for ymin in [-30, -5]:
+    for xmin in [-30, -15, -5]:
         fig, ax = plt.subplots(figsize=(4, 4))
-        bins = np.linspace(ymin, 0, 100)
+        bins = np.linspace(xmin, 0, 100)
         # bins = np.linspace(-0.0005, 0, 100)
         ax.hist(np.log(predictions[is_signal]), bins=bins, alpha=0.5, label="Signal")
         ax.hist(np.log(predictions[~is_signal]), bins=bins, alpha=0.5, label="Noise")
@@ -98,6 +99,7 @@ def plot_all(
         ax.set_ylabel("Counts")
         ax.semilogy()
         ax.legend()
+        ax.tick_params(right=True, top=True)
         plt.subplots_adjust(left=0.18, right=0.95, top=0.95, bottom=0.12)
         pdf.savefig(fig)
         plt.close()
@@ -112,8 +114,9 @@ def plot_unique(
 
     is_signal = np.flatnonzero(labels == 1)
 
-    logging.info(f"Getting unique (slow)")
-    unique_rows, first_indices = np.unique(features, axis=0, return_index=True)
+    logging.info(f"Getting unique")
+    features_arr = undo_onehot(features)
+    unique_rows, first_indices = np.unique(features_arr, axis=0, return_index=True)
     first_signal_indices = np.intersect1d(is_signal, first_indices)
     logging.info(f"unique_rows: {unique_rows.shape}")
     logging.info(f"is_signal: {is_signal.shape}")
@@ -126,17 +129,20 @@ def plot_unique(
     ax.set_ylabel("Counts")
     ax.semilogy()
     ax.legend()
+    ax.tick_params(right=True, top=True)
     plt.subplots_adjust(left=0.18, right=0.95, top=0.95, bottom=0.12)
     pdf.savefig(fig)
     plt.close()
 
-    for ymin in [0.0, 0.80]:
+    for xmin in [0.0, 0.85]:
         fig, ax = plt.subplots(figsize=(4, 4))
-        bins = np.linspace(ymin, 1, 100)
+        bins = np.linspace(xmin, 1, 100)
         ax.hist(predictions[first_signal_indices], bins=bins, alpha=0.5, label="Signal (unique)")
         ax.set_xlabel("Probability")
         ax.set_ylabel("Counts")
+        ax.set_xlim(xmin, 1.0)
         ax.legend()
+        ax.tick_params(right=True, top=True)
         plt.subplots_adjust(left=0.18, right=0.95, top=0.95, bottom=0.12)
         pdf.savefig(fig)
         plt.close()

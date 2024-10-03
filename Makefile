@@ -43,24 +43,55 @@ format:
 
 
 #################################################################################
+# Grabbing latest files                                                         #
+#################################################################################
+
+LATEST_MODEL := $(shell ls -1 model.*.pt | tail -n 1)
+LATEST_FEATURES := $(shell ls -1 train/*features.npy | tail -n 1)
+LATEST_LABELS := $(shell ls -1 train/*labels.npy | tail -n 1)
+
+
+#################################################################################
 # PROJECT RULES                                                                 #
 #################################################################################
 
-.PHONY: generate
-generate:
+.PHONY: generate_random
+generate_random:
 	rm -f gen.*
 	rm -f train/gen.*
 	rm -f valid/gen.*
-	for i in {0..9}; do $(PYTHON_INTERPRETER) scripts/generate.py -n 100_000 --onehot; done
+	for i in {0..9}; do $(PYTHON_INTERPRETER) scripts/generate.py -n 100_000 --onehot --background random; done
 	mv gen.* train/
-	for i in {0..1}; do $(PYTHON_INTERPRETER) scripts/generate.py -n 100_000 --onehot; done
+	for i in {0..1}; do $(PYTHON_INTERPRETER) scripts/generate.py -n 100_000 --onehot --background random; done
 	mv gen.* valid/
+
+
+.PHONY: generate_smear
+generate_smear:
+	rm -f gen.*
+	rm -f train/gen.*
+	rm -f valid/gen.*
+	for i in {0..9}; do $(PYTHON_INTERPRETER) scripts/generate.py -n 100_000 --onehot --background smear; done
+	mv gen.* train/
+	for i in {0..1}; do $(PYTHON_INTERPRETER) scripts/generate.py -n 100_000 --onehot --background smear; done
+	mv gen.* valid/
+
 
 .PHONY: draw_signal
 draw_signal:
 	$(PYTHON_INTERPRETER) scripts/generate.py -n 1_000_000
 	$(PYTHON_INTERPRETER) scripts/draw_signal.py -i $(shell ls -1 gen.*signal.parquet | tail -n 1)
 	open draw_signal.pdf
+
+
+.PHONY: train
+train:
+	$(PYTHON_INTERPRETER) scripts/train_network.py
+
+.PHONY: inference
+inference:
+	$(PYTHON_INTERPRETER) scripts/do_inference.py -m $(LATEST_MODEL) -f $(LATEST_FEATURES) -l $(LATEST_LABELS)
+
 
 ## Make Dataset
 .PHONY: data

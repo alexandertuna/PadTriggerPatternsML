@@ -15,9 +15,9 @@ class OneHotFullyConnected(nn.Module):
     def __init__(self):
         super().__init__()
         self.model = nn.Sequential(
-            nn.Linear(constants.PADS, 32),
+            nn.Linear(constants.PADS, 64),
             nn.ReLU(),
-            nn.Linear(32, 1),
+            nn.Linear(64, 1),
             nn.Sigmoid()
         )
         logger.info(f"Model parameters: {sum(p.numel() for p in self.parameters())}")

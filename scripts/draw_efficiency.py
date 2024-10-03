@@ -5,7 +5,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from pads_ml import constants
-from pads_ml.utils import onehotify
+from pads_ml.utils import onehotify, undo_onehot
+
+import logging
+logging.basicConfig(level=logging.INFO)
 
 def options():
     parser = argparse.ArgumentParser()
@@ -22,31 +25,40 @@ def main():
 
     # get parquet
     input = pd.read_parquet(Path(ops.input))
-    print(input)
+    input_arr = input[ [f"pad_{i}" for i in range(8)] ].to_numpy()
+    input_onehot = onehotify(input)
+    print(input_arr)
 
     # get ranking
     ranking = np.load(Path(ops.ranking)) # [: 10]
-    print("ranking", ranking)
+    ranking = undo_onehot(ranking)
+    print("ranking", ranking[:10])
 
     # onehotify parquet
-    onehot = onehotify(input)
-    print("onehot", onehot)
-    print(onehot.sum(axis=1))
+    # onehot = onehotify(input)
+    # print("onehot", onehot)
+    # print(onehot.sum(axis=1))
 
     # get indices of parquet with enough pads
-    denom_mask = onehot.sum(axis=1) >= constants.PADS_REQUIRED
+    denom_mask = input_onehot.sum(axis=1) >= constants.PADS_REQUIRED
     print("denom_mask", denom_mask)
 
     # get indices of onehotified in ranking
     # this is currently a slow implementation
-    numer_mask = np.zeros(len(onehot), dtype=bool)
-    for i, row in enumerate(onehot):
-        if i % 10000 == 0:
-            print(i)
-        for rank in ranking:
-            if (row == rank).all():
-                numer_mask[i] = True
-                break
+    logging.info("Checking if each signal pattern exists in the ranking")
+    numer_mask = np.zeros(len(input), dtype=bool)
+
+    # apparently this is a vectorized way to check if row inside 2d array
+    numer_mask = (ranking[:, np.newaxis] == input_arr).all(axis=2).any(axis=0)
+
+    # for i, row in enumerate(input_arr):
+    #     if i % 10000 == 0:
+    #         print(i)
+    #     for rank in ranking:
+    #         if (row == rank).all():
+    #             numer_mask[i] = True
+    #             break
+
     print("numer_mask", numer_mask)
 
     # check
@@ -62,8 +74,8 @@ def main():
     cols = ["x", "y"]
     denom_unbinned = input[cols][denom_mask]
     numer_unbinned = input[cols][numer_mask]
-    print("denom_unbinned", denom_unbinned)
-    print("numer_unbinned", numer_unbinned)
+    # print("denom_unbinned", denom_unbinned)
+    # print("numer_unbinned", numer_unbinned)
 
     # make histogramdd of signal, denom and numer
     denom_numpy = denom_unbinned.to_numpy()
@@ -74,8 +86,8 @@ def main():
     ybins = np.linspace(800, 4800, 200)
     denom_hist, (xedges, yedges) = np.histogramdd(denom_numpy, bins=(xbins, ybins))
     numer_hist, (xedges, yedges) = np.histogramdd(numer_numpy, bins=(xbins, ybins))
-    print(xedges)
-    print(yedges)
+    # print(xedges)
+    # print(yedges)
 
     # divide
     with np.errstate(divide='ignore', invalid='ignore'):

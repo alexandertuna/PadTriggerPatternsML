@@ -38,8 +38,8 @@ MIN = 1
 
 def options():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--parquet", help="Input parquet file of pad patterns", required=True)
-    parser.add_argument("--pads", help="Input file of pads geometry", required=True)
+    parser.add_argument("-i", "--input", help="Input parquet file of pad patterns", required=True)
+    parser.add_argument("-p", "--pads", help="Input file of pads geometry", default=constants.PADS_PATH)
     parser.add_argument("-n", "--num", help="Number of patterns to draw", default=20, type=int)
     parser.add_argument("-o", "--output", help="Output pdf file to draw", default="intersecting_pads.pdf")
     return parser.parse_args()
@@ -50,9 +50,9 @@ def main():
     # CL args
     ops = options()
     num_lines = ops.num
-    logging.info(f"Getting patterns from {ops.parquet}")
+    logging.info(f"Getting patterns from {ops.input}")
     logging.info(f"Getting pads from {ops.pads}")
-    gen = pd.read_parquet(ops.parquet)
+    gen = pd.read_parquet(ops.input)
     pads = Pads(ops.pads)
 
     # Draw

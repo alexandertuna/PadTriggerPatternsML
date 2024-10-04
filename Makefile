@@ -92,6 +92,12 @@ train:
 inference:
 	$(PYTHON_INTERPRETER) scripts/do_inference.py -m $(LATEST_MODEL) -f $(LATEST_FEATURES) -l $(LATEST_LABELS)
 
+.PHONY: highest
+highest:
+	$(PYTHON_INTERPRETER) scripts/draw_high_score_signal.py -m $(LATEST_MODEL) -f $(LATEST_FEATURES) -l $(LATEST_LABELS) -n 5000
+	$(PYTHON_INTERPRETER) scripts/draw_efficiency.py
+	open efficiency.pdf
+
 
 ## Make Dataset
 .PHONY: data

@@ -13,6 +13,7 @@ def options():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", help="Input text file", default="data/LS_pack_new_phis.txt")
     parser.add_argument("-o", "--output", help="Output npy file", default="data/LS_pack_new_phis.npy")
+    parser.add_argument("-c", "--csv", help="Output csv file", default="data/LS_pack_new_phis.csv")
     return parser.parse_args()
 
 
@@ -40,9 +41,10 @@ def main():
 
     # convert to indices
     new_arr = np.vectorize(pfeb_and_pad_channel_to_index)(pfebs, chans)
+    new_arr = new_arr.astype(int)
     logging.info(new_arr.shape)
     np.save(ops.output, new_arr)
-
+    np.savetxt(ops.csv, new_arr, delimiter=" ", fmt="%d")
 
 def pfeb_and_pad_channel_to_index(pfeb: int, pad: int) -> int:
     idx = PADS.df[ (PADS.df["pfeb"] == pfeb) & (PADS.df["pad_channel"] == pad) ].index
